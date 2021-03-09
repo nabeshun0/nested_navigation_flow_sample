@@ -24,6 +24,15 @@ void main() {
         late Widget page;
         if (settings.name == routeHome) {
           page = HomeScreen();
+        } else if (settings.name == routeSettings) {
+          page = SettingScreen();
+        } else if (settings.name!.startsWith(routePrefixDeviceSetup)) {
+          final subRoute = settings.name!.substring(
+            routePrefixDeviceSetup.length,
+          );
+          page = SetupFlow(
+            setupPageRoute: subRoute,
+          );
         } else {
           throw Exception('Unknown route: ${settings.name}');
         }
@@ -104,6 +113,50 @@ class HomeScreen extends StatelessWidget {
           },
         ),
       ],
+    );
+  }
+}
+
+class SettingScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: _buildAppBar(),
+      body: SizedBox(),
+    );
+  }
+
+  PreferredSizeWidget _buildAppBar() {
+    return AppBar(
+      title: Text('Settings'),
+    );
+  }
+}
+
+class SetupFlow extends StatefulWidget {
+  const SetupFlow({
+    Key? key,
+    required this.setupPageRoute,
+  });
+
+  final String setupPageRoute;
+
+  @override
+  _SetupFlowState createState() => _SetupFlowState();
+}
+
+class _SetupFlowState extends State<SetupFlow> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: _buildFlowAppBar(),
+      body: SizedBox(),
+    );
+  }
+
+  PreferredSizeWidget _buildFlowAppBar() {
+    return AppBar(
+      title: Text('Bulb Setup'),
     );
   }
 }

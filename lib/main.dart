@@ -119,11 +119,33 @@ class HomeScreen extends StatelessWidget {
 }
 
 class SettingScreen extends StatelessWidget {
+  const SettingScreen({
+    Key? key,
+  }) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: _buildAppBar(),
-      body: SizedBox(),
+      body: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: List.generate(16, (index) {
+            return Container(
+                width: double.infinity,
+                height: 54,
+                margin: const EdgeInsets.only(
+                  left: 16,
+                  right: 16,
+                  top: 16,
+                ),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  color: const Color(0xFF222222),
+                ));
+          }),
+        ),
+      ),
     );
   }
 
@@ -186,16 +208,22 @@ class _SetupFlowState extends State<SetupFlow> {
     late Widget page;
     switch (settings.name) {
       case routeDeviceSetupStartPage:
-        page = SizedBox();
+        page = WaitingPage(
+          message: 'Searching for nearby bulb...',
+          onWaitComplete: _onDiscoveryComplete,
+        );
         break;
       case routeDeviceSetupSelectDevicePage:
-        page = SizedBox();
+        page = SelectDevicePage(onDeviceSelected: _onDeviceSelected);
         break;
       case routeDeviceSetupConnectingPage:
-        page = SizedBox();
+        page = WaitingPage(
+          message: 'Connecting...',
+          onWaitComplete: _onConnectionEstablished,
+        );
         break;
       case routeDeviceSetupFinishedPage:
-        page = SizedBox();
+        page = FinishedPage(onFinishPressed: _exitSetup);
         break;
     }
 
@@ -253,5 +281,174 @@ class _SetupFlowState extends State<SetupFlow> {
 
   void _exitSetup() {
     Navigator.of(context).pop();
+  }
+}
+
+class FinishedPage extends StatelessWidget {
+  const FinishedPage({
+    Key? key,
+    required this.onFinishPressed,
+  });
+
+  final VoidCallback onFinishPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 250,
+                height: 250,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: const Color(0xFF222222),
+                ),
+                child: Center(
+                  child: Icon(
+                    Icons.lightbulb,
+                    size: 175,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+              SizedBox(height: 32),
+              Text(
+                'Bulb added!',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              SizedBox(height: 32),
+              ElevatedButton(
+                  style: ButtonStyle(
+                    padding: MaterialStateProperty.resolveWith(
+                      (states) {
+                        return const EdgeInsets.symmetric(
+                            horizontal: 24, vertical: 12);
+                      },
+                    ),
+                    backgroundColor: MaterialStateColor.resolveWith((states) {
+                      return const Color(0xFF222222);
+                    }),
+                    shape: MaterialStateProperty.resolveWith((states) {
+                      return StadiumBorder();
+                    }),
+                  ),
+                  onPressed: onFinishPressed,
+                  child: Text(
+                    'Finish',
+                    style: TextStyle(
+                      fontSize: 24,
+                    ),
+                  )),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class WaitingPage extends StatefulWidget {
+  const WaitingPage({
+    Key? key,
+    required this.message,
+    required this.onWaitComplete,
+  });
+
+  final String message;
+  final VoidCallback onWaitComplete;
+
+  @override
+  _WaitingPageState createState() => _WaitingPageState();
+}
+
+class _WaitingPageState extends State<WaitingPage> {
+  @override
+  void initState() {
+    super.initState();
+    _startWaiting();
+  }
+
+  Future<void> _startWaiting() async {
+    await Future<dynamic>.delayed(const Duration(seconds: 3));
+
+    if (mounted) {
+      widget.onWaitComplete();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 32),
+              Text(widget.message),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class SelectDevicePage extends StatelessWidget {
+  const SelectDevicePage({
+    Key? key,
+    required this.onDeviceSelected,
+  }) : super(key: key);
+
+  final void Function(String deviceId) onDeviceSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Select a nearby device:',
+                style: Theme.of(context).textTheme.headline6,
+              ),
+              SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                height: 54,
+                child: ElevatedButton(
+                  style: ButtonStyle(
+                    backgroundColor: MaterialStateColor.resolveWith((states) {
+                      return const Color(0xFF222222);
+                    }),
+                  ),
+                  onPressed: () {
+                    onDeviceSelected('22n483nk5834');
+                  },
+                  child: Text(
+                    'Bulb 22n483nk5834',
+                    style: TextStyle(fontSize: 24),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

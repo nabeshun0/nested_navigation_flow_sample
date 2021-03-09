@@ -30,6 +30,7 @@ void main() {
           final subRoute = settings.name!.substring(
             routePrefixDeviceSetup.length,
           );
+          print('•subRoute: $subRoute');
           page = SetupFlow(
             setupPageRoute: subRoute,
           );
@@ -148,15 +149,62 @@ class SetupFlow extends StatefulWidget {
 class _SetupFlowState extends State<SetupFlow> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: _buildFlowAppBar(),
-      body: SizedBox(),
+    return WillPopScope(
+      onWillPop: _isExitDesired,
+      child: Scaffold(
+        appBar: _buildFlowAppBar(),
+        body: SizedBox(),
+      ),
     );
   }
 
   PreferredSizeWidget _buildFlowAppBar() {
     return AppBar(
+      leading: IconButton(
+        onPressed: _onExitPressed,
+        icon: Icon(Icons.chevron_left),
+      ),
       title: Text('Bulb Setup'),
     );
+  }
+
+  Future<void> _onExitPressed() async {
+    final isConfirmed = await _isExitDesired();
+    if (isConfirmed && mounted) {
+      _exitSetup();
+    }
+  }
+
+  Future<bool> _isExitDesired() async {
+    return await showDialog<bool>(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                title: Text('Are you sure?'),
+                content: Text(
+                    'If you exit device setup, your progress will be lost.'),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      // AlertControllerをpop?
+                      // NavigationのStackを確認したい。
+                      Navigator.of(context).pop(true);
+                    },
+                    child: Text('Leave'),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop(false);
+                    },
+                    child: Text('Stay'),
+                  ),
+                ],
+              );
+            }) ??
+        false;
+  }
+
+  void _exitSetup() {
+    Navigator.of(context).pop();
   }
 }

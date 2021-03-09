@@ -147,15 +147,63 @@ class SetupFlow extends StatefulWidget {
 }
 
 class _SetupFlowState extends State<SetupFlow> {
+  final _navigationKey = GlobalKey<NavigatorState>();
+
+  void _onDiscoveryComplete() {
+    _navigationKey.currentState!.pushNamed(
+      routeDeviceSetupSelectDevicePage,
+    );
+  }
+
+  void _onDeviceSelected(String deviceId) {
+    _navigationKey.currentState!.pushNamed(
+      routeDeviceSetupConnectingPage,
+    );
+  }
+
+  void _onConnectionEstablished() {
+    _navigationKey.currentState!.pushNamed(
+      routeDeviceSetupFinishedPage,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: _isExitDesired,
       child: Scaffold(
         appBar: _buildFlowAppBar(),
-        body: SizedBox(),
+        body: Navigator(
+          key: _navigationKey,
+          initialRoute: widget.setupPageRoute,
+          onGenerateRoute: _onGenerateRoute,
+        ),
       ),
     );
+  }
+
+  Route _onGenerateRoute(RouteSettings settings) {
+    late Widget page;
+    switch (settings.name) {
+      case routeDeviceSetupStartPage:
+        page = SizedBox();
+        break;
+      case routeDeviceSetupSelectDevicePage:
+        page = SizedBox();
+        break;
+      case routeDeviceSetupConnectingPage:
+        page = SizedBox();
+        break;
+      case routeDeviceSetupFinishedPage:
+        page = SizedBox();
+        break;
+    }
+
+    return MaterialPageRoute(
+        builder: (context) {
+          return page;
+        },
+        settings: settings);
   }
 
   PreferredSizeWidget _buildFlowAppBar() {
@@ -186,8 +234,7 @@ class _SetupFlowState extends State<SetupFlow> {
                 actions: [
                   TextButton(
                     onPressed: () {
-                      // AlertControllerをpop?
-                      // NavigationのStackを確認したい。
+                      // AlertControllerをpop
                       Navigator.of(context).pop(true);
                     },
                     child: Text('Leave'),
